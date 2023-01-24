@@ -7,7 +7,7 @@ in vec4 color;
 uniform sampler2D tex0;
 void main()
 {
-	vec4 final = vec4(texture(tex0, texCoord).rgb*color.rgb, 1.0);
+	vec4 final = vec4(texture(tex0, texCoord).rgb*color.rgb, color.a);
 	if(final.a < 0.1) {
 		discard;
 	}

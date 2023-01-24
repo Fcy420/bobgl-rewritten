@@ -8,14 +8,17 @@
 #include"StructureType/Boulder.h"
 #include"StructureType/Ship.h"
 #include"StructureType/Atlantis.h"
+//StructureGenerator class
 class StructureGenerator {
 public:
 	void Initialize(World* world) {
 		this->world = world;
 	}
+	//Eval a position to a type
 	bool EvaluatePosition(BlockPos position, StructureType type) {
 		return SpawnStructure(type, position);
 	}
+	// Add structure type to the available spawn types
 	void AddStructureType(StructureType structure) {
 		if (structure == StructureType::BOULDER) {
 			Boulder* boulder = new Boulder();
@@ -34,9 +37,12 @@ private:
 	float Distance(BlockPos a, BlockPos b) {
 		return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) * (a.z - b.z) * (a.z - b.z));
 	}
+	//Spawn a structure at position
 	bool SpawnStructure(StructureType type, BlockPos position) {
+		// Blocks to modify
 		std::vector<ModifyBlock> blocks;
 		bool success = false;
+		//loops through the available the structures
 		for (int i = 0; i < structures.size(); i++) {
 			if (structures[i]->GetType() == type) {
 				float size = structures[i]->GetSize();
@@ -62,6 +68,7 @@ private:
 				break;
 			}
 		}
+		// If the position was successful modify the blocks
 		if (success) {
 			world->Modify(blocks);
 			spawnCount++;

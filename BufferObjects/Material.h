@@ -5,6 +5,7 @@
 
 class Material {
 public:
+	// Pair texture and shader to single object
 	Material(const char* texFileName, Shader* shader) {
 		this->shader = shader;
 		tex.Create(texFileName, this->shader);

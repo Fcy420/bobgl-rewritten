@@ -20,6 +20,7 @@ public:
 		biomeNoise.SetFractalOctaves(1);
 		biomeNoise.SetFractalType(FastNoiseLite::FractalType_FBm);
 	}
+	// Get the terrain block at a position 
 	int Process(glm::vec3 pos) {
 
 		return Noise2D(pos);

@@ -49,9 +49,10 @@ static vertex operator +(vertex& a, BlockPos& b) {
 	result.l = a.l;
 	return result;
 }
-
+// Builds blocks
 class BlockBuilder {
 public:
+	// Create a block with given directions and compare the block id to uv list
 	static VertexComponent CreateBlock(std::vector<glm::vec3> directions, BlockPos pos, int b) {
 		std::vector<vertex> vertices;
 		std::vector<unsigned int> triangles;
@@ -62,6 +63,7 @@ public:
 			vertices.push_back(verts[1]+pos);
 			vertices.push_back(verts[2]+pos);
 			vertices.push_back(verts[3]+pos);
+			// Quad triangles
 			if (!verts[0].reversed) {
 				triangles.push_back(sideIndex * 4);
 				triangles.push_back(sideIndex * 4 + 1);
@@ -82,6 +84,7 @@ public:
 	}
 
 private:
+	// not used
 	static std::vector<char> VertexToChar(std::vector<vertex> vertexes) {
 		std::vector<char> vertices;
 		for (int i = 0; i < vertexes.size(); i++) {
@@ -93,10 +96,12 @@ private:
 		}
 		return vertices;
 	}
+	// Build a quad in given direction
 	static std::vector<vertex> GetDirectionVertices(glm::vec3 side, int b) {
 		Block faces = BLOCKMAP::blockMap[b];
 		std::vector<vertex> vertices;
 		if (side == glm::vec3(1, 0, 0)) {
+			//Get texture coordinates from the block map
 			uv v = BLOCKMAP::faceMap[faces.side];
 			vertices = {
 				{1,0,0, 2, v.u1[0],v.u1[1], true},

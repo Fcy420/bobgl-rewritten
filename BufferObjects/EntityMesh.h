@@ -9,11 +9,13 @@
 #include "Material.h"
 class EntityMesh {
 public:
+	// Load in Object files from 3d models to my vertex and triangle format
 	static EntityMesh LoadOBJ(const char* filePath, Material* mat) {
 		EntityMesh entMesh;
 		std::vector<unsigned int> triangles;
 		std::vector<float> vertices;
 		FILE* file = fopen(filePath, "r");
+		// If the file dont exist
 		if(file == NULL) {
 			printf("Failed to load model\n");
 			return entMesh;
@@ -23,7 +25,7 @@ public:
 			int res = fscanf(file, "%s", lineHeader);
 			if (res == EOF)
 				break;
-
+			// Read lines where it starts with V and read vertex positions
 			if (strcmp(lineHeader, "v") == 0) {
 				glm::vec3 vertex;
 				fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);
@@ -34,6 +36,7 @@ public:
 				vertices.push_back(0.0f);
 				vertices.push_back(4.0f);
 			}
+			// Same but with f and format the triangles
 			else if (strcmp(lineHeader, "f") == 0) {
 
 				unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
@@ -47,9 +50,11 @@ public:
 				triangles.push_back(vertexIndex[2]-1);
 			}
 		}
+		// Initialize the mesh with its properties and return it
 		entMesh.Initialize(vertices, triangles, mat);
 		return entMesh;
 	}
+	// Initialize a mesh with given properties and unload if the mesh already exists in this object
 	void Initialize(std::vector<float> vertices, std::vector<unsigned int> triangles, Material* _mat) {
 		if (exists) {
 			Unload();
@@ -71,6 +76,7 @@ public:
 		mat = _mat;
 		exists = true;
 	}
+	// Draw the mesh to the screen with given rotation and position
 	void Draw(glm::vec3 pos, glm::mat4 rotation, glm::vec4 color) {
 		if (triangles.size() > 0) {
 			glBindVertexArray(vao);
@@ -84,6 +90,7 @@ public:
 			glBindVertexArray(0);
 		}
 	}
+	//Delete the mesh from memory
 	void Unload() {
 		glBindVertexArray(0);
 		triangles.clear();

@@ -27,6 +27,7 @@ static std::string get_file_contents(const char* filename)
 class Shader {
 public:
 	GLuint id;
+	// Create shader from vertex and fragment shader files
 	void Create(const char* vertexFileName, const char* fragmentFileName) {
 		std::string v = get_file_contents(vertexFileName);
 		std::string f = get_file_contents(fragmentFileName);
@@ -45,9 +46,11 @@ public:
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragmentShader);
 	}
+	// Bind the shader for use
 	void Bind() {
 		glUseProgram(id);
 	}
+	// Unload shader from memory
 	void Unload() {
 		glDeleteProgram(id);
 	}

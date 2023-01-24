@@ -1,7 +1,7 @@
 #include "Texture.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include<stb/stb_image.h>
-
+// Create texture from image file and assign it to texture
 void Texture::Create(const char* fileName, Shader* shader) {
 	int wImg, hImg, nColH;
 	stbi_set_flip_vertically_on_load(true);

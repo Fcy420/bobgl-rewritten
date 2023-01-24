@@ -8,6 +8,7 @@ Chunk::Chunk(ChunkID id, WorldProcessor* proc, Material* mat, World* world) {
 	this->mat = mat;
 	this->world = world;
 }
+// Generate noise and structures and the renderable mesh
 void Chunk::Generate(WorldProcessor proc, StructureGenerator* gen) {
 	if (!generated) {
 		UpdateNeighbours();
@@ -23,11 +24,13 @@ void Chunk::Generate(WorldProcessor proc, StructureGenerator* gen) {
 	}
 	loaded = true;
 }
+//Just rebuild the chunk
 void Chunk::Regenerate() {
 	Build();
 	GenMesh();
 	loaded = true;
 }
+//Populate the blockmap with noise
 void Chunk::Populate(WorldProcessor proc, StructureGenerator* gen) {
 	int hIndex = 0;
 	int rX = rand() % 15;
@@ -52,6 +55,7 @@ void Chunk::Populate(WorldProcessor proc, StructureGenerator* gen) {
 		}
 	}
 }
+//Try to spawn a random structure
 void Chunk::SpawnStructures(StructureGenerator* gen, WorldProcessor proc) {
 	bool hasStructure = rand() % 1000 < 10;
 	#pragma region Ship
@@ -84,6 +88,7 @@ void Chunk::Modify(int id, int block) {
 		map[id] = block;
 	}
 }
+//Build the collision and visible mesh
 void Chunk::Build() {
 	int hIndex = 0;
 	boundingBox.clear();
@@ -111,11 +116,13 @@ void Chunk::Build() {
 		}
 	}
 }
+//Decorate terrain with trees and other vegetables
 void Chunk::Decorate() {
 	int hIndex = 0;
 	int dirs[] = {
 		256 * 16,256 * -16,1,-1,16
 	};
+	std::vector<BlockPos> trees;
 	for (int x = 0; x < 16; x++) {
 		for (int y = 0; y < 256; y++) {
 			for (int z = 0; z < 16; z++) {
@@ -127,7 +134,11 @@ void Chunk::Decorate() {
 				}
 				if (!isChanged) {
 					if (map[hIndex] != 0 && map[hIndex] != 4) {
-						if (map[hIndex] == 1) continue;
+						if (map[hIndex] == 1) {
+							if (rand() % 1000 < 3)
+								trees.push_back({ x,y,z });
+							continue;
+						}
 						for (int i = 0; i < 5; i++) {
 							if (map[hIndex] == 5) break;
 							if (hIndex + dirs[i] >= 256 * 16 * 16 || hIndex+dirs[i] < 0) continue;
@@ -143,7 +154,14 @@ void Chunk::Decorate() {
 			}
 		}
 	}
+	for (auto b : trees) {
+		int id = b.x * 256 * 16 + b.y * 16 + b.z;
+		for (int i = 1; i <= 5; i++) {
+			Modify(id, 6);
+		}
+	}
 }
+//Calculate a blocks final directions (If block should have a direction or not and which ones)
 std::vector<glm::vec3> Chunk::CalculateBlock(BlockPos pos) {
 	std::vector<glm::vec3> directions;
 	int posId = pos.x * 256 * 16 + pos.y * 16 + pos.z;
@@ -189,6 +207,7 @@ std::vector<glm::vec3> Chunk::CalculateBlock(BlockPos pos) {
 	}
 	return directions;
 }
+//Combine all the blocks into one draw call
 void Chunk::GenMesh() {
 	MeshComponent comp = GetBatch(solidbatch);
 	solidbatch.clear();
@@ -199,6 +218,7 @@ void Chunk::GenMesh() {
 	waterbatch.shrink_to_fit();
 	waterMesh.Initialize(comp.vertices, comp.triangles, comp.mat);
 }
+//Combine a batch into one meshcomponent
 MeshComponent Chunk::GetBatch(std::vector<VertexComponent> batch) {
 	unsigned int bIndex = 0;
 	std::vector<unsigned char> vertices;
@@ -221,6 +241,7 @@ MeshComponent Chunk::GetBatch(std::vector<VertexComponent> batch) {
 	}
 	return { vertices, triangles, mat };
 }
+//update the chunk neighbours íf they are all updated dont do anything
 void Chunk::UpdateNeighbours() {
 	if (neighbours.size() < 4) {
 		for (int i = 0; i < 4; i++) {
@@ -241,6 +262,7 @@ void Chunk::UpdateNeighbours() {
 		}
 	}
 }
+//Render the solid part of the chunk
 void Chunk::SolidRender() {
 	if (loaded) {
 		UpdateNeighbours();
@@ -248,6 +270,7 @@ void Chunk::SolidRender() {
 		mesh.Draw({id.x*16.0f, 0.0f, id.y*16.0f}, color);
 	}
 }
+//Render the water
 void Chunk::WaterRender() {
 	if (loaded) {
 		glEnable(GL_BLEND);
@@ -255,6 +278,7 @@ void Chunk::WaterRender() {
 		glDisable(GL_BLEND);
 	}
 }
+//Unload the chunk from memory (Dunno why this is not working)
 void Chunk::Unload() {
 	mesh.Unload();
 	waterMesh.Unload();

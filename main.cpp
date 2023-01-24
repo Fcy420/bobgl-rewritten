@@ -11,18 +11,19 @@
 #include"Entity/EntityManager.h"
 #define OGT_VOX_IMPLEMENTATION
 #include"World/Structures/StructureManager.h"
+
 int main()
 {
-	unsigned int WIDTH = 1280;
-	unsigned int HEIGHT = 800;
-	srand(time(0));
+	unsigned int WIDTH = 1920;
+	unsigned int HEIGHT = 1080;
+	srand(500);
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	//glfwWindowHint(GLFW_DECORATED, NULL);
+	glfwWindowHint(GLFW_DECORATED, NULL);
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "BOBGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "BOBGL", monitor, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -40,13 +41,13 @@ int main()
 	Shader shader;
 	shader.Create("Shaders/default.vert", "Shaders/default.frag");
 	WorldProcessor proc;
-	proc.SetSeed(rand() % 100000);
+	proc.SetSeed(500);
 	Material mat("Textures/main.png", &shader);
 	World world(proc, &mat);
 	StructureGenerator gen;
 	gen.Initialize(&world);
 	gen.AddStructureType(SHIP);
-	world.renderDistance = 5;
+	world.renderDistance = 10;
 	world.Create(world.renderDistance, &gen);
 	int frameCounter = 0;
 	int fps = 0;
@@ -57,28 +58,12 @@ int main()
 	EntityManager entityManager(&world, &mat);
 	bool debugMode = false; 
 	glm::vec4 sky = glm::vec4(161 / 255.0f, 1.0f, 243 / 255.0f, 1.0f);
-	float testRot = 0.0f;
-	float spawnCooldown = 0.0f;
 	while (!glfwWindowShouldClose(window))
 	{
 		ChunkID playerId = { floorf(player.GetPosition().x / 16.0f), floorf(player.GetPosition().z / 16.0f) };
 		BlockPos pos = { std::roundf(player.GetPosition().x), std::roundf(player.GetPosition().y), std::roundf(player.GetPosition().z) };
-		BlockPos genpos = { pos.x + (rand() % 50 - 25), 0, pos.z+(rand() % 50 - 25) };
 		world.Update(playerId, &gen);
 		double currentTime = glfwGetTime();
-		if (currentTime < endTime) {
-			frameCounter++;
-			testRot -= 0.5f;
-		}
-		else {
-			endTime = glfwGetTime()+1;
-			fps = frameCounter;
-			frameCounter = 0;
-		}
-		if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS && currentTime >= spawnCooldown) {
-			gen.EvaluatePosition(pos, SHIP);
-			spawnCooldown = currentTime + 0.3f;
-		}
 		std::string title = "Bobcraft, FPS: " + std::to_string(fps);
 		glfwSetWindowTitle(window, title.c_str());
 		glClearColor(sky.r, sky.g, sky.b, sky.a);

@@ -11,6 +11,7 @@ typedef struct {
 	int side;
 	int down;
 } Block;
+// Block map (All usable blocks)
 namespace BLOCKMAP {
 	static uv faceMap[] = {
 		uv{ {0,0},{1,0},{0,1},{1,1} }, // GRASS TOP

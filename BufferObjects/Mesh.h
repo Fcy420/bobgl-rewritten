@@ -11,8 +11,11 @@ typedef struct {
 	std::vector<unsigned int> triangles;
 	Material* mat;
 } MeshComponent;
+
+// Main mesh / Chunkmesh where instead of float we use char as bytes to lower the size of the mesh
 class Mesh {
 public:
+	// Initialize mesh with given properties and assign a material
 	void Initialize(std::vector<unsigned char> vertices, std::vector<unsigned int> triangles, Material* _mat) {
 		if (!exists) {
 			glGenVertexArrays(1, &vao);
@@ -36,6 +39,7 @@ public:
 		mat = _mat;
 		exists = true;
 	}
+	// Draw with position and no rotation since chunks don't use rotations
 	void Draw(glm::vec3 pos, glm::vec4 color) {
 		if (triangles.size() > 0) {
 			glBindVertexArray(vao);
@@ -48,6 +52,7 @@ public:
 			glBindVertexArray(0);
 		}
 	}
+	// Unload it from memory
 	void Unload() {
 		glBindVertexArray(vao);
 		triangles.clear();
@@ -55,6 +60,7 @@ public:
 		exists = false;
 		glBindVertexArray(0);
 	}
+	//Delete it from memory
 	void Delete() {
 		glBindVertexArray(0);
 		triangles.clear();

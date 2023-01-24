@@ -12,6 +12,7 @@ public:
 	FishEntity(Material* mat, glm::vec3 position, World* world);
 	virtual void Update();
 private:
+	// For the fish not be synced with eachother
 	int randomStartTime = rand() % 10000;
 	float testRot = 0.0f;
 	double moveFrame = 0;

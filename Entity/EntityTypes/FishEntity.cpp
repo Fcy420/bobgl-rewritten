@@ -1,5 +1,5 @@
 #include "FishEntity.h"
-
+// Create fishentity and assign the given parameters and create a boundingbox for the fish
 FishEntity::FishEntity(Material* mat, glm::vec3 position, World* world) {
 	/*float width = 0.1f;
 	float length = 0.75f;
@@ -44,7 +44,7 @@ FishEntity::FishEntity(Material* mat, glm::vec3 position, World* world) {
 	SetBoundingBox(box);
 	this->position = position;
 }
-
+// Move in a random position and draw the fish with a plain rotation
 void FishEntity::Update() {
 	double currentFrame = glfwGetTime();
 	if (currentFrame >= moveFrame) {

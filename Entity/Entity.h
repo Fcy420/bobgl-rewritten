@@ -6,12 +6,12 @@
 #include"../Collision/CollisionManager.h"
 #include <glm/glm.hpp>
 
-
+// All entity types
 enum EntityType {
 	FISH,
 	PLAYER
 };
-
+// Base class for a entity
 class Entity {
 public:
 	virtual void Update();

@@ -46,6 +46,7 @@ public:
 	Chunk* GetChunkAt(ChunkID id);
 	std::vector<Chunk*> GetChunksNear(ChunkID, int range);
 	int renderDistance = 8;
+	//Translate a position to local chunk coordinates ( for example -1 to 63 )
 	BlockPos TranslatePos(BlockPos pos) {
 		ChunkID id = { floorf(pos.x / 16.0f), floorf(pos.z / 16.0f) };
 		int x = pos.x - id.x * 16.0f;

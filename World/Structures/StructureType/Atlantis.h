@@ -3,8 +3,10 @@
 #include"../Structure.h"
 #include"../../World.h"
 #include"../../../objhelpers/vox_loader.h"
+// Derive from the structure class
 class Atlantis : public Structure {
 public:
+	// Set the properties of Atlantis and use the Vox loader library to load in Vox files as arrays of block and disable the sdf function
 	Atlantis() {
 		SetValues(ATLANTIS, 0.0f); 
 		isDistanceDependendent = false;
@@ -13,6 +15,7 @@ public:
 		size = vox_loader::GetVoxModelSize("Models/atlantis.vox");
 
 	}
+	// Place all the predefined blocks in a vector that the world can read and align them to the given position
 	virtual std::vector<ModifyBlock> DefinedFunction(BlockPos p) {
 		std::vector<ModifyBlock> blocks;
 		/*for (int x = 0; x < 6; x++) {
@@ -39,6 +42,7 @@ public:
 		}
 		return blocks;
 	}
+	// Spawn conditions for the structure to spawn
 	virtual bool SpawnConditions(World* world, BlockPos triedPosition) {
 		return true;
 		for (int x = 0; x < size.x; x++) {

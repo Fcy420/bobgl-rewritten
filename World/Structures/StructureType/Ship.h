@@ -4,8 +4,10 @@
 #include"../../World.h"
 #include "../../../objhelpers/vox_loader.h"
 #include<iostream>
+// Derive from structure class
 class Ship : public Structure {
 public:
+	//Load the ship vox model into the game and pair the different color values to blocks (Further explantion in Atlantis file)
 	Ship() {
 		SetValues(SHIP, 0.0f);
 		isDistanceDependendent = false;
@@ -13,6 +15,7 @@ public:
 		predefinedBlocks = vox_loader::GetVoxModel("Models/ship.vox", voxBlocks);
 		size = vox_loader::GetVoxModelSize("Models/ship.vox");
 	}
+	// Align the block position to a main position and a random rotation
 	virtual std::vector<ModifyBlock> DefinedFunction(BlockPos p) {
 		std::vector<ModifyBlock> blocks;
 		/*for (int x = 0; x < 6; x++) {

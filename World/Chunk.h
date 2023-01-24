@@ -26,11 +26,13 @@ static bool operator != (ChunkID& a, ChunkID& b) {
 	return a.x != b.x && a.y != b.y;
 }
 class Chunk {
+	// Neighbour of this chunk
 	typedef struct {
 		ChunkID id;
 		Chunk* c;
 	} ChunkNeighbour;
 public:
+	// Constructor for chunk (Assigning variables)
 	Chunk(ChunkID id, WorldProcessor* proc, Material* mat, World* world);
 	void Generate(WorldProcessor proc, StructureGenerator* gen);
 	void Regenerate();
@@ -48,6 +50,7 @@ public:
 	ChunkID GetID() {
 		return id;
 	}
+	//Get collision boxes for the current chunk
 	std::vector<BoundingBox> GetBoxes() {
 		return boundingBox;
 	}
@@ -79,6 +82,7 @@ private:
 	ChunkID id;
 	Mesh mesh;
 	Mesh waterMesh;
+	// Block map
 	unsigned __int8 map[16 * 16 * 256] = { 0 };
 	WorldProcessor* proc;
 	Material* mat;
