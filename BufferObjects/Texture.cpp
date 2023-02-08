@@ -9,6 +9,7 @@ void Texture::Create(const char* fileName, Shader* shader) {
 	if (!bytes) {
 		std::cout << "Failed to load texture\n";
 	}
+	//Alot of opengl bullshit but it creates a texture and assigns it a image that is our texture atlas
 	glGenTextures(1, &id);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, id);

@@ -10,6 +10,7 @@ Chunk::Chunk(ChunkID id, WorldProcessor* proc, Material* mat, World* world) {
 }
 // Generate noise and structures and the renderable mesh
 void Chunk::Generate(WorldProcessor proc, StructureGenerator* gen) {
+	//Safety measure to not "Create" a chunk more than once
 	if (!generated) {
 		UpdateNeighbours();
 		Populate(proc, gen);
@@ -33,6 +34,7 @@ void Chunk::Regenerate() {
 //Populate the blockmap with noise
 void Chunk::Populate(WorldProcessor proc, StructureGenerator* gen) {
 	int hIndex = 0;
+	//Go through a 3d grid of 0's and give them meaning in life and dont change if it already has a value
 	for (int x = 0; x < 16; x++) {
 		for (int y = 0; y < 256; y++) {
 			for (int z = 0; z < 16; z++) {
@@ -64,6 +66,7 @@ void Chunk::SpawnStructures(StructureGenerator* gen, WorldProcessor proc) {
 		//if (res) return;
 		randomYPosition = proc.isoSurface;
 		bool canSpawn = true;
+		//Check the position for water for a ship to spawn
 		while (proc.Process({ randomXPosition + id.x * 16, randomYPosition, randomZPosition + id.y * 16 }) != 4) {
 			if (proc.Process({ randomXPosition + id.x * 16, randomYPosition, randomZPosition + id.y * 16 }) == 0) {
 				canSpawn = false;
@@ -89,16 +92,19 @@ void Chunk::Modify(int id, int block) {
 void Chunk::Build() {
 	int heightIndex = 0;
 	boundingBox.clear();
+	//Go through the same 3d grid of values that earlier didn't have meaning and give them a block with faces depending on the surrounding values
 	for (int x = 0; x < 16; x++) {
 		for (int y = 0; y < 256; y++) {
 			for (int z = 0; z < 16; z++) {
 				if (map[heightIndex] != 0) {
 					std::vector<glm::vec3> directions;
+					//Check the surrounding values to see if any of them are transparent then add face
 					directions = CalculateBlock({ x,y,z });
 					VertexComponent block = BlockBuilder::CreateBlock(directions, { x,y,z }, map[heightIndex]);
 					if(map[heightIndex] == 4) 
 						waterbatch.push_back(block);
 					else {
+						//Add a colliding box if the block has a face
 						if (directions.size() > 0) {
 							BoundingBox box;
 							box.min = { x+id.x*16,y,z+id.y*16 };
@@ -129,8 +135,10 @@ void Chunk::Decorate() {
 						isChanged = true;
 					}
 				}
+				//If the block isn't changed since before the check for a tree
 				if (!isChanged) {
 					if (map[heightIndex] != 0 && map[heightIndex] != 4) {
+						//if the block isn't transparent and is grass add a tree depending on a 3 on 1000 chance (Dunno not working) <- Anders fel lovar
 						if (map[heightIndex] == 1) {
 							if (rand() % 1000 < 3)
 								trees.push_back({ x,y,z });
@@ -151,6 +159,7 @@ void Chunk::Decorate() {
 			}
 		}
 	}
+	//Modify the trees as a root
 	for (auto& block : trees) {
 		int id = block.x * 256 * 16 + block.y * 16 + block.z;
 		for (int i = 1; i <= 5; i++) {
@@ -162,6 +171,7 @@ void Chunk::Decorate() {
 std::vector<glm::vec3> Chunk::CalculateBlock(BlockPos pos) {
 	std::vector<glm::vec3> directions;
 	int positionId = pos.x * 256 * 16 + pos.y * 16 + pos.z;
+	// if the given block is water only add the top direction if it touches air or any other block
 	if (map[positionId] == 4) {
 		glm::vec3 direction = UP;
 		glm::vec3 directionPosition = { pos.x + direction.x,pos.y + direction.y,pos.z + direction.z };
@@ -171,6 +181,7 @@ std::vector<glm::vec3> Chunk::CalculateBlock(BlockPos pos) {
 		}
 		return directions;
 	}
+	//Check all cube directions for blocks and if the blocks are solid don't add the direction
 	for (int i = 0; i < 6; i++) {
 		glm::vec3 direction = DIRECTIONS[i];
 		glm::vec3 directionPosition = { pos.x + direction.x,pos.y + direction.y,pos.z + direction.z };
@@ -206,10 +217,13 @@ std::vector<glm::vec3> Chunk::CalculateBlock(BlockPos pos) {
 }
 //Combine all the blocks into one draw call
 void Chunk::GenMesh() {
+	//Get a single mesh component from a batch of vertex component / blocks
 	MeshComponent meshComponent = GetBatch(solidbatch);
 	solidbatch.clear();
 	solidbatch.shrink_to_fit();
+	//Initialize the solid mesh
 	mesh.Initialize(meshComponent.vertices, meshComponent.triangles, meshComponent.mat);
+	//Repeat for water (Seperating for transparency issues)
 	meshComponent = GetBatch(waterbatch);
 	waterbatch.clear();
 	waterbatch.shrink_to_fit();

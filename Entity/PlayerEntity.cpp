@@ -97,7 +97,7 @@ void PlayerEntity::Inputs(GLFWwindow* window) {
 	//Give the camera inputs
 	camera.Inputs(window);
 }
-// initialize the player class with its shader and world and the width, height of screen for the camera
+// initialize the player class with its shader and world and the width, height of screen for the camera and w is for width and h is for height
 PlayerEntity::PlayerEntity(int w, int h, glm::vec3 position, Shader* shader, World* world) {
 	camera.Initialize(w, h, position);
 	BoundingBox box;

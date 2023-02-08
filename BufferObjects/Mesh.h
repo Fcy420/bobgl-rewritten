@@ -23,6 +23,7 @@ public:
 		else {
 			glDeleteBuffers(1, &vbo);
 		}
+		//Create a buffer which contains all the vertices and assign it to a vertex array object which resides in the shader also use unsigned char to only use a 6 bytes for a whole vertex instead of a whopping 24 bytes
 		glGenBuffers(1, &vbo);
 		glBindVertexArray(vao);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);

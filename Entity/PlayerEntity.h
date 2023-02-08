@@ -18,6 +18,7 @@ public:
 	BlockPos RaycastFromCamera(float maxDist, float stepSize) {
 		BlockPos prevPos = { floorf(camera.position.x), floorf(camera.position.y), floorf(camera.position.z) };
 		float t = 0.0f;
+		// Move in a direction until the distance is too far away or if a block is hit
 		while (t < maxDist) {
 			glm::vec3 pos = camera.position + camera.orientation * t;
 			BlockPos bPos = { floorf(pos.x), floorf(pos.y), floorf(pos.z) };

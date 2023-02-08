@@ -59,6 +59,7 @@ public:
 		std::vector<unsigned int> triangles;
 		for (int sideIndex = 0; sideIndex < directions.size(); sideIndex++) {
 
+			//Set block to a 0 -> amount of unique blocks so that air counts as 0
 			int block = blockType - 1;
 			std::vector<vertex> verts = GetDirectionVertices(directions[sideIndex], block);
 			vertices.push_back(verts[0]+pos);

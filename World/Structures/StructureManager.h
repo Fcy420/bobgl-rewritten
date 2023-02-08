@@ -48,6 +48,7 @@ private:
 				float size = structures[i]->GetSize();
 				if (structures[i]->SpawnConditions(world, position) && Distance(position, latestSpawn) > 0.0f) {
 					if (structures[i]->IsDist()) {
+						//Check the distance of every block in a 3d grid of size size
 						for (int x = -size; x < size; x++) {
 							for (int y = -size; y < size; y++) {
 								for (int z = -size; z < size; z++) {

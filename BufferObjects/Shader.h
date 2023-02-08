@@ -7,7 +7,7 @@
 #include<iostream>
 #include<cerrno>
 
-//CTRL C CTRL V
+//CTRL C CTRL V FROM VICTOR GORDON
 static std::string get_file_contents(const char* filename)
 {
 	std::ifstream in(filename, std::ios::binary);

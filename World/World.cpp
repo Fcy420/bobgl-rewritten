@@ -51,12 +51,13 @@ void World::Update(ChunkID center, StructureGenerator* gen) {
 			}
 		}
 	}
-	// Add chunks in a renderdistance*2, renderdistance*2 formation
+	// Add chunks in a quad formation (This is why chunks can appear further away than chunks closer)
 	for (int x = -renderDistance; x < renderDistance; x++) {
 		for (int y = -renderDistance; y < renderDistance; y++) {
 			ChunkID id = { center.x + x,center.y + y };
 			bool exists = false, loaded = false;;
 			int index = 0;
+			//Go through ALL chunks to see if the current chunkId exists
 			for (int i = 0; i < chunksLoaded.size(); i++) {
 				if (chunksLoaded[i].GetID().x == id.x && chunksLoaded[i].GetID().y == id.y) {
 					exists = true;
@@ -64,6 +65,7 @@ void World::Update(ChunkID center, StructureGenerator* gen) {
 					index = i;
 				}
 			}
+			//Create chunk if it doesn't exists and if it does exists but isn't loaded just load the chunk back in. Also check the block queue for blocks waiting in chunks not loaded
 			if (!exists) {
 				Chunk chunk(id, &worldProcessor, mat, this);
 				for (int i = 0; i < blockQueue.size(); i++) {
@@ -100,6 +102,7 @@ std::vector<Chunk*> World::GetChunksNear(ChunkID id, int range) {
 	std::vector<Chunk*> product;
 	for (int i = 0; i < chunksLoaded.size(); i++) {
 		ChunkID currentId = chunksLoaded[i].GetID();
+		//Get the difference in chunks aka distance to see if the chunk is viable to be returned
 		int diffX = std::abs(currentId.x - id.x);
 		int diffY = std::abs(currentId.y - id.y);
 		int finalDiff = std::max(diffX, diffY);
@@ -127,6 +130,7 @@ void World::Modify(std::vector<ModifyBlock> blocks) {
 				if (chunksLoaded[i].IsLoaded()) {
 					chunksLoaded[i].Modify(localId, block.block);
 					bool alreadyChanged = false;
+					//Check if the chunk already has been changed before so we don't reload a chunk more than once (Huge optimization)
 					for (auto chunks : changedChunks) {
 						if (chunks == i) {
 							alreadyChanged = true;
@@ -152,6 +156,7 @@ void World::Modify(std::vector<ModifyBlock> blocks) {
 			blockQueue.push_back(queueBlock);
 		}
  	}
+	//Only update chunks that have been changed
 	for (auto i : changedChunks) {
 		chunksLoaded[i].Regenerate();
 	}
@@ -184,15 +189,18 @@ int World::GetHighestBlock(int x, int y) {
 }
 // Render the world and update the water offset
 void World::Render() {
+	//Only bind the shader and texture once in a world render so every chunk doesn't bind the smae shader
 	mat->shader->Bind();
 	mat->tex.Bind();
 	double currentFrame = glfwGetTime();
 	float deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
+	// Send the sun position to the shader for "lighting" effects (I dont have any this is pointless)
 	glUniform3fv(glGetUniformLocation(mat->shader->id, "sunPos"), 1, glm::value_ptr(sunPosition));
 	for (int i = 0; i < chunksLoaded.size(); i++) {
 		chunksLoaded[i].SolidRender();
 	}
+	//Update the waters position so the waves move by offseting the sin waves position
 	glUniform2fv(glGetUniformLocation(mat->shader->id, "waterPos"), 1, glm::value_ptr(waterPosition));
 	for (int i = 0; i < chunksLoaded.size(); i++) {
 		chunksLoaded[i].WaterRender();

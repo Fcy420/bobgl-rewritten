@@ -11,6 +11,7 @@ void Camera::Matrix(float FOVdeg, float nearPlane, float farPlane, Shader* shade
 	glm::mat4 proj = glm::mat4(1.0f);
 	view = glm::lookAt(position, position + orientation, up);
 	proj = glm::perspective(glm::radians(FOVdeg), (float)(width/height), nearPlane, farPlane);
+	//Set the current view matrix so it can be used on the CPU side
 	currentViewRotation = view * proj;
 	glUniformMatrix4fv(glGetUniformLocation(shader->id, uniform), 1, GL_FALSE, glm::value_ptr(proj * view));
 	glUniform3fv(glGetUniformLocation(shader->id, "eyePosition"), 1, glm::value_ptr(position));
@@ -20,6 +21,7 @@ void Camera::Inputs(GLFWwindow* window) {
 	double mouseX;
 	double mouseY;
 	glfwGetCursorPos(window, &mouseX, &mouseY);
+	//Get the delta of mouse movements and use magic to make it to rotation and look at point
 	float rotationX = sense * (float)(mouseY - (height / 2)) / height;
 	float rotationY = sense * (float)(mouseX - (width / 2)) / width;
 	glm::vec3 newOrientation = glm::rotate(orientation, glm::radians(-rotationX), glm::normalize(glm::cross(orientation, up)));
@@ -27,5 +29,6 @@ void Camera::Inputs(GLFWwindow* window) {
 		orientation = newOrientation;
 		orientation = glm::rotate(orientation, glm::radians(-rotationY), up);
 	}
+	//Reset the cursor to the center of the screen
 	glfwSetCursorPos(window, (width / 2), (height / 2));
 }
