@@ -1,0 +1,4 @@
+Problem med blocken syntes inte. Tror det är någonting med koordinaterna på kanterna
+Chunksen är på samma plats måste nog fixa lite i shadern.
+Vattnet ser skumt man ser inte i rätt ordning är nog fel med ordern på transparencyn.
+Träden skärs av vid kanten av en chunk måste fixa cross chunk modifying.

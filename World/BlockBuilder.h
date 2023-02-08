@@ -24,6 +24,7 @@ typedef struct {
 	int y;
 	int z;
 } BlockPos;
+// L stands for lightvalue
 typedef struct {
 	unsigned char x;
 	unsigned char y;
@@ -53,17 +54,19 @@ static vertex operator +(vertex& a, BlockPos& b) {
 class BlockBuilder {
 public:
 	// Create a block with given directions and compare the block id to uv list
-	static VertexComponent CreateBlock(std::vector<glm::vec3> directions, BlockPos pos, int b) {
+	static VertexComponent CreateBlock(std::vector<glm::vec3> directions, BlockPos pos, int blockType) {
 		std::vector<vertex> vertices;
 		std::vector<unsigned int> triangles;
 		for (int sideIndex = 0; sideIndex < directions.size(); sideIndex++) {
-			int block = b - 1;
+
+			int block = blockType - 1;
 			std::vector<vertex> verts = GetDirectionVertices(directions[sideIndex], block);
 			vertices.push_back(verts[0]+pos);
 			vertices.push_back(verts[1]+pos);
 			vertices.push_back(verts[2]+pos);
 			vertices.push_back(verts[3]+pos);
 			// Quad triangles
+			//Combine the vertices in a quad order
 			if (!verts[0].reversed) {
 				triangles.push_back(sideIndex * 4);
 				triangles.push_back(sideIndex * 4 + 1);
@@ -102,60 +105,59 @@ private:
 		std::vector<vertex> vertices;
 		if (side == glm::vec3(1, 0, 0)) {
 			//Get texture coordinates from the block map
-			uv v = BLOCKMAP::faceMap[faces.side];
+			uv uv = BLOCKMAP::faceMap[faces.side];
 			vertices = {
-				{1,0,0, 2, v.u1[0],v.u1[1], true},
-				{1,0,1, 2, v.v1[0],v.v1[1], false },
-				{1,1,0, 2, v.u2[0],v.u2[1], false },
-				{1,1,1, 2, v.v2[0],v.v2[1], false },
+				{1,0,0, 2, uv.u1[0],uv.u1[1], true},
+				{1,0,1, 2, uv.v1[0],uv.v1[1], false },
+				{1,1,0, 2, uv.u2[0],uv.u2[1], false },
+				{1,1,1, 2, uv.v2[0],uv.v2[1], false },
 			};
 		}
 		else if (side == glm::vec3(-1, 0, 0)) {
-			uv v = BLOCKMAP::faceMap[faces.side];
+			uv uv = BLOCKMAP::faceMap[faces.side];
 			vertices = {
-				{0,0,0, 3, v.u1[0],v.u1[1], false },
-				{0,0,1, 3, v.v1[0],v.v1[1], false },
-				{0,1,0, 3, v.u2[0],v.u2[1], false },
-				{0,1,1, 3, v.v2[0],v.v2[1], false },
+				{0,0,0, 3, uv.u1[0],uv.u1[1], false },
+				{0,0,1, 3, uv.v1[0],uv.v1[1], false },
+				{0,1,0, 3, uv.u2[0],uv.u2[1], false },
+				{0,1,1, 3, uv.v2[0],uv.v2[1], false },
 			};
 		}
 		else if (side == glm::vec3(0, 0, -1)) {
-			uv v = BLOCKMAP::faceMap[faces.side];
+			uv uv = BLOCKMAP::faceMap[faces.side];
 			vertices = {
-				{0,0,0, 0, v.u1[0],v.u1[1], true },
-				{1,0,0, 0, v.v1[0],v.v1[1], false },
-				{0,1,0, 0, v.u2[0],v.u2[1], false },
-				{1,1,0, 0, v.v2[0],v.v2[1], false },
+				{0,0,0, 0, uv.u1[0],uv.u1[1], true },
+				{1,0,0, 0, uv.v1[0],uv.v1[1], false },
+				{0,1,0, 0, uv.u2[0],uv.u2[1], false },
+				{1,1,0, 0, uv.v2[0],uv.v2[1], false },
 			};
 		}
 		else if (side == glm::vec3(0, 0, 1)) {
-			uv v = BLOCKMAP::faceMap[faces.side];
+			uv uv = BLOCKMAP::faceMap[faces.side];
 			vertices = {
-				{0,0,1, 1, v.u1[0],v.u1[1], false },
-				{1,0,1, 1, v.v1[0],v.v1[1], false },
-				{0,1,1, 1, v.u2[0],v.u2[1], false },
-				{1,1,1, 1, v.v2[0],v.v2[1], false },
+				{0,0,1, 1, uv.u1[0],uv.u1[1], false },
+				{1,0,1, 1, uv.v1[0],uv.v1[1], false },
+				{0,1,1, 1, uv.u2[0],uv.u2[1], false },
+				{1,1,1, 1, uv.v2[0],uv.v2[1], false },
 			};
 		}
 		else if (side == glm::vec3(0, 1, 0)) {
-			uv v = BLOCKMAP::faceMap[faces.up];
+			uv uv = BLOCKMAP::faceMap[faces.up];
 			vertices = {
-				{0,1,0, 4, v.u1[0],v.u1[1], true },
-				{1,1,0, 4, v.v1[0],v.v1[1], false },
-				{0,1,1, 4, v.u2[0],v.u2[1], false },
-				{1,1,1, 4, v.v2[0],v.v2[1], false },
+				{0,1,0, 4, uv.u1[0],uv.u1[1], true },
+				{1,1,0, 4, uv.v1[0],uv.v1[1], false },
+				{0,1,1, 4, uv.u2[0],uv.u2[1], false },
+				{1,1,1, 4, uv.v2[0],uv.v2[1], false },
 			};
 		}
 		else if (side == glm::vec3(0, -1, 0)) {
-			uv v = BLOCKMAP::faceMap[faces.down];
+			uv uv = BLOCKMAP::faceMap[faces.down];
 			vertices = {
-				{0,0,0, 5, v.u1[0],v.u1[1], false },
-				{1,0,0, 5, v.v1[0],v.v1[1], false },
-				{0,0,1, 5, v.u2[0],v.u2[1], false },
-				{1,0,1, 5, v.v2[0],v.v2[1], false },
+				{0,0,0, 5, uv.u1[0],uv.u1[1], false },
+				{1,0,0, 5, uv.v1[0],uv.v1[1], false },
+				{0,0,1, 5, uv.u2[0],uv.u2[1], false },
+				{1,0,1, 5, uv.v2[0],uv.v2[1], false },
 			};
 		}
-		return vertices;
 		return vertices;
 	}
 };

@@ -22,48 +22,32 @@ public:
 	}
 	// Get the terrain block at a position 
 	int Process(glm::vec3 pos) {
-
 		return Noise2D(pos);
 	}
+
 	int Noise2D(glm::vec3 pos) {
-		float v = noise.GetNoise(pos.x, pos.z);
-		float fv = FalloffValue(pos, 1200.0f);
-		v -= fv;
-		if (v < -1.0f) {
-			v = -1.0f;
+		float noiseValue = noise.GetNoise(pos.x, pos.z);
+		float falloffValue = FalloffValue(pos, 1200.0f);
+		noiseValue -= falloffValue;
+		if (noiseValue < -1.0f) {
+			noiseValue = -1.0f;
 		}
-		if (v > 1.0f) {
-			v = 1.0f;
+		if (noiseValue > 1.0f) {
+			noiseValue = 1.0f;
 		}
-		v *= 16;
-		float finalV = pos.y - v;
-		int bType = 0;
-		if (finalV < iso) {
-			bType = 2;
-			/*int bTypeAbove = Noise2D(glm::vec3(pos.x, pos.y + 1, pos.z));
-			if (bTypeAbove == 0) {
-				bType = 1;
-			}
-			else if (bTypeAbove == 4) {
-				bType = 5;
-			}*/
+		noiseValue *= 64;
+		float finalNoiseValue = pos.y - noiseValue;
+		int blockType = 0;
+		if (finalNoiseValue < isoSurface) {
+			blockType = 2;
 		}
-		if (pos.y < water && bType == 0) {
-			bType = 4;
+		if (pos.y < water && blockType == 0) {
+			blockType = 4;
 		}
 		if (GetBiomeAmplifiers(pos.x, pos.z) >= 0.8f && GetBiomeAmplifiers(pos.x, pos.z) < 1.0f) {
-			if (bType > 0 && bType != 4) bType = 5;
+			if (blockType > 0 && blockType != 4) blockType = 5;
 		}
-		if (pos.y == 0) bType = 3;
-		return bType;
-	}
-	int Noise3D(glm::vec3 pos) {
-		float v = noise.GetNoise(pos.x, pos.y, pos.z);
-		float d = pos.y / 255;
-		int blockType = 0;
-		if (v > 0) {
-			blockType = 1;
-		}
+		if (pos.y == 0) blockType = 3;
 		return blockType;
 	}
 	void SetSeed(long seed) {
@@ -72,7 +56,7 @@ public:
 	float GetBiomeAmplifiers(float x, float z) {
 		return biomeNoise.GetNoise(x, z);
 	}
-	int iso = 80;
+	int isoSurface = 80;
 	int water = 80;
 private:
 	float FalloffValue(glm::vec3 pos, float size) {

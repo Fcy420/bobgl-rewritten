@@ -62,7 +62,7 @@ public:
 		for (int x = 0; x < size.x; x++) {
 			for (int y = 0; y < size.z; y++) {
 				BlockPos curPos = { triedPosition.x, triedPosition.y, triedPosition.z };
-				if (world->GetProc()->Process({ curPos.x, curPos.y, curPos.z }) != 4) {
+				if (world->GetWorldProcessor()->Process({ curPos.x, curPos.y, curPos.z }) != 4) {
 					//std::cout << world->GetProc()->Process({ curPos.x,curPos.y,curPos.z }) << "\n";
 					return false;
 				}

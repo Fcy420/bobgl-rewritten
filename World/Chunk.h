@@ -78,13 +78,14 @@ private:
 	std::vector<VertexComponent> solidbatch;
 	std::vector<VertexComponent> waterbatch;
 	std::vector<BoundingBox> boundingBox;
+	//The neighbouring chunks
 	std::vector<ChunkNeighbour> neighbours;
 	ChunkID id;
 	Mesh mesh;
 	Mesh waterMesh;
 	// Block map
 	unsigned __int8 map[16 * 16 * 256] = { 0 };
-	WorldProcessor* proc;
+	WorldProcessor* worldProcessor;
 	Material* mat;
 	World* world;
 };

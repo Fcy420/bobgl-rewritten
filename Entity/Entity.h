@@ -22,13 +22,13 @@ public:
 		return entityType;
 	}
 protected:
-	virtual void InitializeEntity(World* world, EntityType type);
+	virtual void Initialize(World* world, EntityType type);
 	virtual void Move(glm::vec3 vector);
 	virtual void SetBoundingBox(BoundingBox box);
 	glm::vec3 position;
 	BoundingBox box;
 	ChunkID id;
-	Chunk* c;
+	Chunk* chunk;
 	World* world;
 	EntityType entityType;
 	bool isNocliping = false;

@@ -9,7 +9,7 @@ public:
 		SetValues(BOULDER, 5.0f);
 	}
 	virtual float DistanceFunction(BlockPos p, BlockPos spawnedPosition) {
-		return blength(p, spawnedPosition) < size;
+		return blockDistance(p, spawnedPosition) < size;
 	}
 };
 #endif

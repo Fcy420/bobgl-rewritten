@@ -9,6 +9,8 @@
 #include<glm/gtx/vector_angle.hpp>
 #include"BufferObjects/Shader.h"
 
+
+//Camera class inspired by Victor Gordons tutorial on camera
 class Camera {
 public:
 	void Initialize(int w, int h, glm::vec3 position);
@@ -18,8 +20,8 @@ public:
 	glm::vec3 position;
 	glm::vec3 orientation = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-	int w;
-	int h;
+	int width;
+	int height;
 	float sense = 100.0f;
 };
 

@@ -37,7 +37,7 @@ FishEntity::FishEntity(Material* mat, glm::vec3 position, World* world) {
 		2,1,0,1,2,3,4,5,6,7,6,5,8,9,10,11,10,9,14,13,12,13,14,15,16,17,18,19,18,17,22,21,20,21,22,23,
 	};*/
 	mesh = EntityMesh::LoadOBJ("Models/fish.obj", mat);
-	InitializeEntity(world, FISH);
+	Initialize(world, FISH);
 	BoundingBox box;
 	box.min = { -0.1f,-0.1f,-0.1f };
 	box.max = { 0.1f,0.1f,0.1f };

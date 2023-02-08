@@ -4,7 +4,7 @@
 
 Chunk::Chunk(ChunkID id, WorldProcessor* proc, Material* mat, World* world) {
 	this->id = id;
-	this->proc = proc;
+	this->worldProcessor = proc;
 	this->mat = mat;
 	this->world = world;
 }
@@ -33,9 +33,6 @@ void Chunk::Regenerate() {
 //Populate the blockmap with noise
 void Chunk::Populate(WorldProcessor proc, StructureGenerator* gen) {
 	int hIndex = 0;
-	int rX = rand() % 15;
-	int rY = rand() % 15;
-	bool hasStructure = rand() % 1000 < 300;
 	for (int x = 0; x < 16; x++) {
 		for (int y = 0; y < 256; y++) {
 			for (int z = 0; z < 16; z++) {
@@ -60,24 +57,24 @@ void Chunk::SpawnStructures(StructureGenerator* gen, WorldProcessor proc) {
 	bool hasStructure = rand() % 1000 < 10;
 	#pragma region Ship
 	if (hasStructure) {
-		int rx = 0;
-		int rz = 0;
-		int ry = proc.water - 1;
-		bool res = gen->EvaluatePosition({ rx + id.x * 16,ry,rz + id.y * 16 }, SHIP);
+		int randomXPosition = 0;
+		int randomZPosition = 0;
+		int randomYPosition = proc.water - 1;
+		bool result = gen->EvaluatePosition({ randomXPosition + id.x * 16,randomYPosition,randomZPosition + id.y * 16 }, SHIP);
 		//if (res) return;
-		ry = proc.iso;
+		randomYPosition = proc.isoSurface;
 		bool canSpawn = true;
-		while (proc.Process({ rx + id.x * 16, ry, rz + id.y * 16 }) != 4) {
-			if (proc.Process({ rx + id.x * 16, ry, rz + id.y * 16 }) == 0) {
+		while (proc.Process({ randomXPosition + id.x * 16, randomYPosition, randomZPosition + id.y * 16 }) != 4) {
+			if (proc.Process({ randomXPosition + id.x * 16, randomYPosition, randomZPosition + id.y * 16 }) == 0) {
 				canSpawn = false;
 				break;
 			}
-			ry++;
+			randomYPosition++;
 		}
-		if (canSpawn) res = gen->EvaluatePosition({ rx + id.x * 16, ry, rz + id.y * 16 }, ATLANTIS);
-		if (res) return;
-		ry = world->GetTopHeight(rx + id.x * 16, rz + id.y * 16);
-		res = gen->EvaluatePosition({ rx + id.x * 16, ry, rz + id.y * 16 }, ATLANTIS);
+		if (canSpawn) result = gen->EvaluatePosition({ randomXPosition + id.x * 16, randomYPosition, randomZPosition + id.y * 16 }, ATLANTIS);
+		if (result) return;
+		randomYPosition = world->GetHighestBlock(randomXPosition + id.x * 16, randomZPosition + id.y * 16);
+		result = gen->EvaluatePosition({ randomXPosition + id.x * 16, randomYPosition, randomZPosition + id.y * 16 }, ATLANTIS);
 
 	}
 	#pragma endregion
@@ -90,16 +87,16 @@ void Chunk::Modify(int id, int block) {
 }
 //Build the collision and visible mesh
 void Chunk::Build() {
-	int hIndex = 0;
+	int heightIndex = 0;
 	boundingBox.clear();
 	for (int x = 0; x < 16; x++) {
 		for (int y = 0; y < 256; y++) {
 			for (int z = 0; z < 16; z++) {
-				if (map[hIndex] != 0) {
+				if (map[heightIndex] != 0) {
 					std::vector<glm::vec3> directions;
 					directions = CalculateBlock({ x,y,z });
-					VertexComponent block = BlockBuilder::CreateBlock(directions, { x,y,z }, map[hIndex]);
-					if(map[hIndex] == 4) 
+					VertexComponent block = BlockBuilder::CreateBlock(directions, { x,y,z }, map[heightIndex]);
+					if(map[heightIndex] == 4) 
 						waterbatch.push_back(block);
 					else {
 						if (directions.size() > 0) {
@@ -111,15 +108,15 @@ void Chunk::Build() {
 						solidbatch.push_back(block);
 					}
 				}
-				hIndex++;
+				heightIndex++;
 			}
 		}
 	}
 }
 //Decorate terrain with trees and other vegetables
 void Chunk::Decorate() {
-	int hIndex = 0;
-	int dirs[] = {
+	int heightIndex = 0;
+	int blockDirections[] = {
 		256 * 16,256 * -16,1,-1,16
 	};
 	std::vector<BlockPos> trees;
@@ -128,34 +125,34 @@ void Chunk::Decorate() {
 			for (int z = 0; z < 16; z++) {
 				bool isChanged = false;
 				for (int i = 0; i < changed.size(); i++) {
-					if (changed[i] == hIndex) {
+					if (changed[i] == heightIndex) {
 						isChanged = true;
 					}
 				}
 				if (!isChanged) {
-					if (map[hIndex] != 0 && map[hIndex] != 4) {
-						if (map[hIndex] == 1) {
+					if (map[heightIndex] != 0 && map[heightIndex] != 4) {
+						if (map[heightIndex] == 1) {
 							if (rand() % 1000 < 3)
 								trees.push_back({ x,y,z });
 							continue;
 						}
 						for (int i = 0; i < 5; i++) {
-							if (map[hIndex] == 5) break;
-							if (hIndex + dirs[i] >= 256 * 16 * 16 || hIndex+dirs[i] < 0) continue;
-							if (map[hIndex + dirs[i]] == 4)
-								map[hIndex] = 5;
+							if (map[heightIndex] == 5) break;
+							if (heightIndex + blockDirections[i] >= 256 * 16 * 16 || heightIndex+blockDirections[i] < 0) continue;
+							if (map[heightIndex + blockDirections[i]] == 4)
+								map[heightIndex] = 5;
 						}
-						if (map[hIndex + 16] == 0) {
-							if (map[hIndex] != 5) map[hIndex] = 1;
+						if (map[heightIndex + 16] == 0) {
+							if (map[heightIndex] != 5) map[heightIndex] = 1;
 						}
  					}
 				}
-				hIndex++;
+				heightIndex++;
 			}
 		}
 	}
-	for (auto b : trees) {
-		int id = b.x * 256 * 16 + b.y * 16 + b.z;
+	for (auto& block : trees) {
+		int id = block.x * 256 * 16 + block.y * 16 + block.z;
 		for (int i = 1; i <= 5; i++) {
 			Modify(id, 6);
 		}
@@ -164,42 +161,42 @@ void Chunk::Decorate() {
 //Calculate a blocks final directions (If block should have a direction or not and which ones)
 std::vector<glm::vec3> Chunk::CalculateBlock(BlockPos pos) {
 	std::vector<glm::vec3> directions;
-	int posId = pos.x * 256 * 16 + pos.y * 16 + pos.z;
-	if (map[posId] == 4) {
-		glm::vec3 dir = UP;
-		glm::vec3 dirPos = { pos.x + dir.x,pos.y + dir.y,pos.z + dir.z };
-		int id = dirPos.x * 256 * 16 + dirPos.y * 16 + dirPos.z;
+	int positionId = pos.x * 256 * 16 + pos.y * 16 + pos.z;
+	if (map[positionId] == 4) {
+		glm::vec3 direction = UP;
+		glm::vec3 directionPosition = { pos.x + direction.x,pos.y + direction.y,pos.z + direction.z };
+		int id = directionPosition.x * 256 * 16 + directionPosition.y * 16 + directionPosition.z;
 		if (map[id] != 4) {
-			directions.push_back(dir);
+			directions.push_back(direction);
 		}
 		return directions;
 	}
 	for (int i = 0; i < 6; i++) {
-		glm::vec3 dir = DIRECTIONS[i];
-		glm::vec3 dirPos = { pos.x + dir.x,pos.y + dir.y,pos.z + dir.z };
-		int id = dirPos.x * 256 * 16 + dirPos.y * 16 + dirPos.z;
-		if (dirPos.y >= 0 && dirPos.y < 256) {
-			if (dirPos.x >= 0 && dirPos.x < 16 && dirPos.z >= 0 && dirPos.z < 16) {
+		glm::vec3 direction = DIRECTIONS[i];
+		glm::vec3 directionPosition = { pos.x + direction.x,pos.y + direction.y,pos.z + direction.z };
+		int id = directionPosition.x * 256 * 16 + directionPosition.y * 16 + directionPosition.z;
+		if (directionPosition.y >= 0 && directionPosition.y < 256) {
+			if (directionPosition.x >= 0 && directionPosition.x < 16 && directionPosition.z >= 0 && directionPosition.z < 16) {
 				if (map[id] == 0) {
-					directions.push_back(dir);
+					directions.push_back(direction);
 				}
-				if (map[id] == 4 && map[posId] != 4) {
-					directions.push_back(dir);
+				if (map[id] == 4 && map[positionId] != 4) {
+					directions.push_back(direction);
 				}
 			}
 			else {
 				bool isChanged = false;
 				for (int i = 0; i < changed.size(); i++) {
-					if (changed[i] == posId) {
-						directions.push_back(dir);
+					if (changed[i] == positionId) {
+						directions.push_back(direction);
 						isChanged = true;
 					}
 				}
-				if (map[posId] != 4 && !isChanged) {
-					BlockPos pos = { this->id.x * 16 + dirPos.x, dirPos.y, this->id.y * 16 + dirPos.z };
-					int type = proc->Process(glm::vec3(pos.x, pos.y, pos.z));
-					if (type <= 0 || type == 4) {
-						directions.push_back(dir);
+				if (map[positionId] != 4 && !isChanged) {
+					BlockPos position = { this->id.x * 16 + directionPosition.x, directionPosition.y, this->id.y * 16 + directionPosition.z };
+					int blockType = worldProcessor->Process(glm::vec3(position.x, position.y, position.z));
+					if (blockType <= 0 || blockType == 4) {
+						directions.push_back(direction);
 					}
 				}
 			}
@@ -209,18 +206,18 @@ std::vector<glm::vec3> Chunk::CalculateBlock(BlockPos pos) {
 }
 //Combine all the blocks into one draw call
 void Chunk::GenMesh() {
-	MeshComponent comp = GetBatch(solidbatch);
+	MeshComponent meshComponent = GetBatch(solidbatch);
 	solidbatch.clear();
 	solidbatch.shrink_to_fit();
-	mesh.Initialize(comp.vertices, comp.triangles, comp.mat);
-	comp = GetBatch(waterbatch);
+	mesh.Initialize(meshComponent.vertices, meshComponent.triangles, meshComponent.mat);
+	meshComponent = GetBatch(waterbatch);
 	waterbatch.clear();
 	waterbatch.shrink_to_fit();
-	waterMesh.Initialize(comp.vertices, comp.triangles, comp.mat);
+	waterMesh.Initialize(meshComponent.vertices, meshComponent.triangles, meshComponent.mat);
 }
 //Combine a batch into one meshcomponent
 MeshComponent Chunk::GetBatch(std::vector<VertexComponent> batch) {
-	unsigned int bIndex = 0;
+	unsigned int blockIndex = 0;
 	std::vector<unsigned char> vertices;
 	std::vector<unsigned int> triangles;
 	for (int i = 0; i < batch.size(); i++) {
@@ -234,10 +231,10 @@ MeshComponent Chunk::GetBatch(std::vector<VertexComponent> batch) {
 			vertices.push_back(batch[i].vertices[k].l);
 		}
 		for (int k = 0; k < batch[i].triangles.size(); k++) {
-			unsigned int index = batch[i].triangles[k] + bIndex;
+			unsigned int index = batch[i].triangles[k] + blockIndex;
 			triangles.push_back(index);
 		}
-		bIndex += batch[i].vertices.size();
+		blockIndex += batch[i].vertices.size();
 	}
 	return { vertices, triangles, mat };
 }
@@ -267,6 +264,7 @@ void Chunk::SolidRender() {
 	if (loaded) {
 		UpdateNeighbours();
 		glm::vec4 color = { 1,1,1,1 };
+		//Drawing the chunk in the right position sending data to the shader
 		mesh.Draw({id.x*16.0f, 0.0f, id.y*16.0f}, color);
 	}
 }
@@ -274,6 +272,7 @@ void Chunk::SolidRender() {
 void Chunk::WaterRender() {
 	if (loaded) {
 		glEnable(GL_BLEND);
+		//Render the water in the right by sending data to the shader
 		waterMesh.Draw({ id.x * 16.0f, -0.4f, id.y * 16.0f }, { 1,1,1,0.8f });
 		glDisable(GL_BLEND);
 	}
@@ -282,5 +281,6 @@ void Chunk::WaterRender() {
 void Chunk::Unload() {
 	mesh.Unload();
 	waterMesh.Unload();
+	//Setting loaded to false to not render in the future
 	loaded = false;
 }

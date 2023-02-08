@@ -29,10 +29,10 @@ public:
 	GLuint id;
 	// Create shader from vertex and fragment shader files
 	void Create(const char* vertexFileName, const char* fragmentFileName) {
-		std::string v = get_file_contents(vertexFileName);
-		std::string f = get_file_contents(fragmentFileName);
-		const char* vertex = v.c_str();
-		const char* fragment = f.c_str();
+		std::string vertexFileContents = get_file_contents(vertexFileName);
+		std::string fragmentFileContents = get_file_contents(fragmentFileName);
+		const char* vertex = vertexFileContents.c_str();
+		const char* fragment = fragmentFileContents.c_str();
 		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vertexShader, 1, &vertex, NULL);
 		glCompileShader(vertexShader);

@@ -21,9 +21,9 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_DECORATED, NULL);
+	//glfwWindowHint(GLFW_DECORATED, NULL);
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "BOBGL", monitor, NULL);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "BOBGL", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -57,7 +57,7 @@ int main()
 	PlayerEntity player(WIDTH, HEIGHT, { 0,0,0 }, &shader, &world);
 	EntityManager entityManager(&world, &mat);
 	bool debugMode = false; 
-	glm::vec4 sky = glm::vec4(161 / 255.0f, 1.0f, 243 / 255.0f, 1.0f);
+	glm::vec4 skyColor = glm::vec4(161 / 255.0f, 1.0f, 243 / 255.0f, 1.0f);
 	while (!glfwWindowShouldClose(window))
 	{
 		ChunkID playerId = { floorf(player.GetPosition().x / 16.0f), floorf(player.GetPosition().z / 16.0f) };
@@ -66,7 +66,7 @@ int main()
 		double currentTime = glfwGetTime();
 		std::string title = "Bobcraft, FPS: " + std::to_string(fps);
 		glfwSetWindowTitle(window, title.c_str());
-		glClearColor(sky.r, sky.g, sky.b, sky.a);
+		glClearColor(skyColor.r, skyColor.g, skyColor.b, skyColor.a);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shader.Bind();
 		player.Update(window);

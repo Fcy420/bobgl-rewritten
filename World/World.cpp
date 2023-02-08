@@ -2,7 +2,7 @@
 #include "Structures/StructureManager.h"
 //Constructor
 World::World(WorldProcessor proc, Material* mat) {
-	this->proc = proc;
+	this->worldProcessor = proc;
 	this->mat = mat;
 }
 //Create a world with given start distance and update chunks which had blocks put in them (Blockqueue)
@@ -10,24 +10,24 @@ void World::Create(int dist, StructureGenerator* gen) {
 	for (int x = -dist; x < dist; x++) {
 		for (int y = -dist; y < dist; y++) {
 			ChunkID id = { x,y };
-			Chunk c(id, &proc, mat, this);
+			Chunk chunk(id, &worldProcessor, mat, this);
 			for (int i = 0; i < blockQueue.size(); i++) {
 				if (blockQueue[i].id == id) {
-					int bId = blockQueue[i].pos.x * 256 * 16 + blockQueue[i].pos.y * 16 + blockQueue[i].pos.z;
-					c.Modify(bId, blockQueue[i].block);
+					int blockId = blockQueue[i].pos.x * 256 * 16 + blockQueue[i].pos.y * 16 + blockQueue[i].pos.z;
+					chunk.Modify(blockId, blockQueue[i].block);
 					blockQueue.erase(blockQueue.begin() + i);
 				}
 			}
-			chunksLoaded.push_back(c);
+			chunksLoaded.push_back(chunk);
 			loadQueue.push_back(chunksLoaded.size() - 1);
 		}
 	}
 	blockQueue.shrink_to_fit();
 }
-//Update the render distance of chunk and build the next chunk in loadqueue
+//Update the render distance of chunk around the center
 void World::Update(ChunkID center, StructureGenerator* gen) {
 	if (loadQueue.size() > 0) {
-		chunksLoaded[loadQueue[0]].Generate(proc, gen);
+		chunksLoaded[loadQueue[0]].Generate(worldProcessor, gen);
 		loadQueue.erase(loadQueue.begin());
 		loadQueue.shrink_to_fit();
 	}
@@ -41,9 +41,10 @@ void World::Update(ChunkID center, StructureGenerator* gen) {
 	//Unload the chunks which are too far away
 	for (int i = 0; i < chunksLoaded.size(); i++) {
 		if (chunksLoaded[i].IsLoaded()) {
-			ChunkID cid = chunksLoaded[i].GetID();
-			float xDiff = std::abs(cid.x - center.x);
-			float yDiff = std::abs(cid.y - center.y);
+			ChunkID chunkId = chunksLoaded[i].GetID();
+			float xDiff = std::abs(chunkId.x - center.x);
+			float yDiff = std::abs(chunkId.y - center.y);
+			//Max value of the differens in x and y planes
 			float diff = std::max(xDiff, yDiff);
 			if (diff > renderDistance) {
 				unloadQueue.push_back(i);
@@ -64,15 +65,15 @@ void World::Update(ChunkID center, StructureGenerator* gen) {
 				}
 			}
 			if (!exists) {
-				Chunk c(id, &proc, mat, this);
+				Chunk chunk(id, &worldProcessor, mat, this);
 				for (int i = 0; i < blockQueue.size(); i++) {
 					if (blockQueue[i].id == id) {
-						int bId = blockQueue[i].pos.x * 256 * 16 + blockQueue[i].pos.y * 16 + blockQueue[i].pos.z;
-						c.Modify(bId, blockQueue[i].block);
+						int blockId = blockQueue[i].pos.x * 256 * 16 + blockQueue[i].pos.y * 16 + blockQueue[i].pos.z;
+						chunk.Modify(blockId, blockQueue[i].block);
 						blockQueue.erase(blockQueue.begin() + i);
 					}
 				}
-				chunksLoaded.push_back(c);
+				chunksLoaded.push_back(chunk);
 				loadQueue.push_back(chunksLoaded.size() - 1);
 			}
 			else {
@@ -115,14 +116,14 @@ void World::Modify(std::vector<ModifyBlock> blocks) {
 	for (auto block : blocks) {
 		if (block.globalPos.y == 255) continue;
 		//Localize the block
-		BlockPos local = TranslatePos(block.globalPos);
+		BlockPos localPosition = TranslatePos(block.globalPos);
 		//Get chunk that the blocks resides in
 		ChunkID id = { floorf(block.globalPos.x / 16.0f), floorf(block.globalPos.z / 16.0f) };
 		bool chunkExists = false;
 		for (int i = 0; i < chunksLoaded.size(); i++) {
 			if (chunksLoaded[i].GetID().x == id.x && chunksLoaded[i].GetID().y == id.y) {
 				chunkExists = true;
-				int localId = local.x * 256 * 16 + local.y * 16 + local.z;
+				int localId = localPosition.x * 256 * 16 + localPosition.y * 16 + localPosition.z;
 				if (chunksLoaded[i].IsLoaded()) {
 					chunksLoaded[i].Modify(localId, block.block);
 					bool alreadyChanged = false;
@@ -147,7 +148,7 @@ void World::Modify(std::vector<ModifyBlock> blocks) {
 			QueueBlock queueBlock;
 			queueBlock.block = block.block;
 			queueBlock.id = id;
-			queueBlock.pos = local;
+			queueBlock.pos = localPosition;
 			blockQueue.push_back(queueBlock);
 		}
  	}
@@ -157,18 +158,18 @@ void World::Modify(std::vector<ModifyBlock> blocks) {
 }
 int World::GetBlockAt(BlockPos position) {
 	ChunkID id = { floorf(position.x / 16.0f), floorf(position.z / 16.0f) };
-	BlockPos local = TranslatePos(position);
+	BlockPos localPosition = TranslatePos(position);
 	for (int i = 0; i < chunksLoaded.size(); i++) {
-		ChunkID cid = chunksLoaded[i].GetID();
-		if (id == cid) {
-			int blockId = local.x * 256 * 16 + local.y * 16 + local.z;
+		ChunkID chunkId = chunksLoaded[i].GetID();
+		if (id == chunkId) {
+			int blockId = localPosition.x * 256 * 16 + localPosition.y * 16 + localPosition.z;
 			return chunksLoaded[i].GetBlock(blockId);
 		}
 	}
 	return -1;
 }
 // Get highest surface at 2d point
-int World::GetTopHeight(int x, int y) {
+int World::GetHighestBlock(int x, int y) {
 	ChunkID id = { floorf(x / 16.0f), floorf(y / 16.0f) };
 	Chunk* c = GetChunkAt(id);
 	if (c == nullptr) return 0;
@@ -196,12 +197,13 @@ void World::Render() {
 	for (int i = 0; i < chunksLoaded.size(); i++) {
 		chunksLoaded[i].WaterRender();
 	}
+	// Move the center water position
 	waterPosition.x += 3.0f*deltaTime;
 	waterPosition.y += 3.0f*deltaTime;
 }
 //Delete the world from memory
 void World::Delete() {
-	for (auto c : chunksLoaded) {
+	for (auto& c : chunksLoaded) {
 		c.Unload();
 	}
 	chunksLoaded.clear();

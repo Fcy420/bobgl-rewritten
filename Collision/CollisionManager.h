@@ -6,10 +6,10 @@
 class CollisionManager {
 public:
 	// Check collisions with a given boundingbox and compare towards to a vector of boundingbox
-	static bool IsColliding(BoundingBox a, std::vector<BoundingBox> boxes) {
+	static bool IsColliding(BoundingBox boxToCheck, std::vector<BoundingBox> boxes) {
 		for (int i = 0; i < boxes.size(); i++) {
 			BoundingBox face = boxes[i];
-			if (Collision::IsColliding(face,a)) {
+			if (Collision::IsColliding(face,boxToCheck)) {
 				return true;
 			}
 		}

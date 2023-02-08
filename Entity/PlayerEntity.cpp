@@ -103,7 +103,7 @@ PlayerEntity::PlayerEntity(int w, int h, glm::vec3 position, Shader* shader, Wor
 	BoundingBox box;
 	box.max = { 0.3f,1.5f,0.3f };
 	box.min = { -0.3f,-0.5f,-0.3f };
-	InitializeEntity(world, PLAYER);
+	Initialize(world, PLAYER);
 	SetBoundingBox(box);
 	this->position = position;
 	this->shader = shader;

@@ -40,14 +40,14 @@ public:
 		exists = true;
 	}
 	// Draw with position and no rotation since chunks don't use rotations
-	void Draw(glm::vec3 pos, glm::vec4 color) {
+	void Draw(glm::vec3 position, glm::vec4 color) {
 		if (triangles.size() > 0) {
 			glBindVertexArray(vao);
-			glUniform3fv(glGetUniformLocation(mat->shader->id, "pos"), 1, glm::value_ptr(pos));
+			glUniform3fv(glGetUniformLocation(mat->shader->id, "pos"), 1, glm::value_ptr(position));
 			glUniform4fv(glGetUniformLocation(mat->shader->id, "aColor"), 1, glm::value_ptr(color));
-			glm::mat4 matrix = glm::mat4(1);
-			matrix = glm::translate(matrix, pos);
-			glUniformMatrix4fv(glGetUniformLocation(mat->shader->id, "transformMatrix"), 1, GL_FALSE, glm::value_ptr(matrix));
+			glm::mat4 transformationMatrix = glm::mat4(1);
+			transformationMatrix = glm::translate(transformationMatrix, position);
+			glUniformMatrix4fv(glGetUniformLocation(mat->shader->id, "transformMatrix"), 1, GL_FALSE, glm::value_ptr(transformationMatrix));
 			glDrawElements(GL_TRIANGLES, triangles.size(), GL_UNSIGNED_INT, triangles.data());
 			glBindVertexArray(0);
 		}
